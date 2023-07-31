@@ -4,16 +4,15 @@ using namespace std;
 typedef long long ll;
 typedef long double ld;
 
-
-
 struct Node {
     int value;
     Node *next;
+    Node *prev;
 };
 void printList(Node* &head) {
     while(head != nullptr) {
         cout<<head->value<<endl;
-        head = head->next;
+        head = head->prev;
     }
 //    delete head;
 }
@@ -34,6 +33,7 @@ int main() {
         Node *x = new Node();
         x->value = n;
         x->next = nullptr;
+        x->prev = temp;
         if (temp == nullptr) {
             temp = x;
             head = temp;
@@ -43,11 +43,8 @@ int main() {
         }
     }
 
-    printList(head);
+    printList(temp);
 
-    cout<<"=================="<<endl;
-
-    printList(head);
 
     return 0;
 }
