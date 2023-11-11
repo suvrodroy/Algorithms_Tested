@@ -3,4 +3,4 @@ project(Algorithms_Tested)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(Algorithms_Tested "Binary Search.cpp")
+add_executable(Algorithms_Tested  Hash_table.cpp)
