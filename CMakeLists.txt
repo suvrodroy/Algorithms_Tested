@@ -5,7 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_executable(Algorithms_Tested
 #        "Finding Bridges in Graphs.cpp"
-        "Find Cycle.cpp"
+#        "Find Cycle.cpp"
 #        "Lowest Common Ancestor.cpp"
 #        main.cpp
+#        "Monotone Chain Convex Hull.cpp"
+        AhoCorassic.cpp
+        GeoNecessities.cpp
 )
