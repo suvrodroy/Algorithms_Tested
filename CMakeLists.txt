@@ -16,4 +16,5 @@ add_executable(Algorithms_Tested
         Temp.cpp
         BitTrie.cpp
         SuffixAutomaton.cpp
+        Geo.cpp
 )
