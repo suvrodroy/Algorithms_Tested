@@ -45,7 +45,6 @@ int nCr(int nn, int r)
     return (nom * denom) % Mod;
 }
 // End Of nCr Calculation
-
 // Template for Ordered Set
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
@@ -77,7 +76,6 @@ private:
     using pii = pair<T, int>;
     tree<pii, null_type, less<pii>, rb_tree_tag, tree_order_statistics_node_update> os;
     int uid = 0; // Unique ID for handling duplicates
-
 public:
     // Insert a value
     void insert(T x) {
@@ -93,44 +91,36 @@ public:
         }
         return false;
     }
-
     // Count how many times x appears
     int count(T x) {
         return order_of_key_upper(x) - order_of_key(x);
     }
-
     // Number of elements strictly less than x
     int order_of_key(T x) {
         return os.order_of_key({x, 0});
     }
-
     // Number of elements ≤ x
     int order_of_key_upper(T x) {
         return os.order_of_key({x, INT_MAX});
     }
-
     // K-th smallest (0-indexed). Returns -1 if k is invalid
     T find_by_order(int k) {
         if (k < 0 || k >= (int)os.size()) return -1; // Or throw exception
         return os.find_by_order(k)->first;
     }
-
     // Size of multiset
     int size() const {
         return os.size();
     }
-
     // Check if x exists
     bool contains(T x) {
         return count(x) > 0;
     }
-
     // Clear all elements
     void clear() {
         os.clear();
         uid = 0;
     }
-
     // Print contents for debugging
     void print() {
         for (auto [val, _] : os) cout << val << " ";
