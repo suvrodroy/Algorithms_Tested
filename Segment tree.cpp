@@ -1,102 +1,94 @@
-#include <bits/stdc++.h>
-using namespace std;
-
-class SegmentTree {
-public:
-    vector<int> tree, lazy;
+struct SegTree {
     int n;
+    vector<int> tree, lazy;
+    // vector<bool> hasLazy; // uncomment for RANGE ASSIGN version
 
-    SegmentTree(int size) {
-        n = size;
-        tree.resize(4 * n);
-        lazy.resize(4 * n);
+    SegTree(int _n) {
+        n = _n;
+        tree.assign(4 * n, 0);
+        lazy.assign(4 * n, 0);
+        // hasLazy.assign(4 * n, false); // for RANGE ASSIGN
     }
 
-    void buildMin(vector<int>& arr, int node, int start, int end) {
-        if (start == end) {
-            tree[node] = arr[start];
-        } else {
-            int mid = (start + end) / 2;
-            buildMin(arr, 2 * node, start, mid);
-            buildMin(arr, 2 * node + 1, mid + 1, end);
-            tree[node] = min(tree[2 * node], tree[2 * node + 1]);
-        }
+    int merge(int a, int b) {
+        return a + b; // change if needed (min/max/etc)
     }
 
-    void buildMax(vector<int>& arr, int node, int start, int end) {
-        if (start == end) {
-            tree[node] = arr[start];
-        } else {
-            int mid = (start + end) / 2;
-            buildMax(arr, 2 * node, start, mid);
-            buildMax(arr, 2 * node + 1, mid + 1, end);
-            tree[node] = max(tree[2 * node], tree[2 * node + 1]);
-        }
-    }
-
-    void updateLazy(int node, int start, int end, int l, int r, int value) {
-        if (lazy[node] != 0) {
-            tree[node] += lazy[node];
-            if (start != end) {
-                lazy[2 * node] += lazy[node];
-                lazy[2 * node + 1] += lazy[node];
-            }
-            lazy[node] = 0;
-        }
-
-        if (start > end || start > r || end < l) return;
-
-        if (start >= l && end <= r) {
-            tree[node] += value;
-            if (start != end) {
-                lazy[2 * node] += value;
-                lazy[2 * node + 1] += value;
-            }
+    void build(vector<int> &a, int node, int l, int r) {
+        if (l == r) {
+            tree[node] = a[l];
             return;
         }
-
-        int mid = (start + end) / 2;
-        updateLazy(2 * node, start, mid, l, r, value);
-        updateLazy(2 * node + 1, mid + 1, end, l, r, value);
-        tree[node] = min(tree[2 * node], tree[2 * node + 1]);
+        int mid = (l + r) / 2;
+        build(a, node * 2, l, mid);
+        build(a, node * 2 + 1, mid + 1, r);
+        tree[node] = merge(tree[node * 2], tree[node * 2 + 1]);
     }
 
-    int query(int node, int start, int end, int l, int r) {
-        if (lazy[node] != 0) {
-            tree[node] += lazy[node];
-            if (start != end) {
-                lazy[2 * node] += lazy[node];
-                lazy[2 * node + 1] += lazy[node];
-            }
-            lazy[node] = 0;
+    void build(vector<int> &a) {
+        build(a, 1, 0, n - 1);
+    }
+
+    // apply: used by both update() and push()
+    void apply(int node, int l, int r, int val) {
+        // --------- RANGE ADD VERSION ---------
+        tree[node] += (r - l + 1) * val;
+        lazy[node] += val;
+
+        // --------- RANGE ASSIGN VERSION ---------
+        // tree[node] = (r - l + 1) * val;
+        // lazy[node] = val;
+        // hasLazy[node] = true;
+    }
+
+    void push(int node, int l, int r) {
+        if (l == r) return;
+
+        // --------- RANGE ADD VERSION ---------
+        if (lazy[node] == 0) return;
+        int mid = (l + r) / 2;
+        apply(node * 2,     l,     mid, lazy[node]);
+        apply(node * 2 + 1, mid + 1, r, lazy[node]);
+        lazy[node] = 0;
+
+        // --------- RANGE ASSIGN VERSION ---------
+        // if (!hasLazy[node]) return;
+        // int mid = (l + r) / 2;
+        // apply(node * 2,     l,     mid, lazy[node]);
+        // apply(node * 2 + 1, mid + 1, r, lazy[node]);
+        // hasLazy[node] = false;
+    }
+
+    void update(int node, int l, int r, int ql, int qr, int val) {
+        if (qr < l || r < ql) return;
+        if (ql <= l && r <= qr) {
+            apply(node, l, r, val);
+            return;
         }
+        push(node, l, r);
+        int mid = (l + r) / 2;
+        update(node * 2,     l,     mid, ql, qr, val);
+        update(node * 2 + 1, mid + 1, r, ql, qr, val);
+        tree[node] = merge(tree[node * 2], tree[node * 2 + 1]);
+    }
 
-        if (start > end || start > r || end < l) return INT_MAX;
-        if (start >= l && end <= r) return tree[node];
+    int query(int node, int l, int r, int ql, int qr) {
+        if (qr < l || r < ql) return 0; // identity for sum
+        if (ql <= l && r <= qr) return tree[node];
+        push(node, l, r);
+        int mid = (l + r) / 2;
+        return merge(
+            query(node * 2,     l,     mid, ql, qr),
+            query(node * 2 + 1, mid + 1, r, ql, qr)
+        );
+    }
 
-        int mid = (start + end) / 2;
-        return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));
+    // thin wrappers
+    void update(int l, int r, int val) {
+        update(1, 0, n - 1, l, r, val);
+    }
+
+    int query(int l, int r) {
+        return query(1, 0, n - 1, l, r);
     }
 };
-
-int main() {
-    vector<int> arr = {1, 3, -2, 8, -7, 6};
-    int n = arr.size();
-
-    SegmentTree minTree(n);
-    minTree.buildMin(arr, 1, 0, n - 1);
-
-    SegmentTree maxTree(n);
-    maxTree.buildMax(arr, 1, 0, n - 1);
-
-    SegmentTree lazyTree(n);
-    lazyTree.buildMin(arr, 1, 0, n - 1);
-
-    cout << "Min query (0,4): " << minTree.query(1, 0, n - 1, 0, 4) << endl;
-    cout << "Max query (1,3): " << maxTree.query(1, 0, n - 1, 1, 3) << endl;
-
-    lazyTree.updateLazy(1, 0, n - 1, 1, 4, 3);
-    cout << "Lazy updated min query (0,4): " << lazyTree.query(1, 0, n - 1, 0, 4) << endl;
-
-    return 0;
-}

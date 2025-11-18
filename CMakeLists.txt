@@ -11,4 +11,9 @@ add_executable(Algorithms_Tested
 #        "Monotone Chain Convex Hull.cpp"
         AhoCorassic.cpp
         GeoNecessities.cpp
+        DynamicConvexHull.cpp
+        suffixArray.cpp
+        Temp.cpp
+        BitTrie.cpp
+        SuffixAutomaton.cpp
 )
